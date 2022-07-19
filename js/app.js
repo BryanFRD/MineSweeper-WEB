@@ -39,7 +39,8 @@ function refreshBombsInput(){
 }
 
 function resetGame(){
-  if(!time){
+  if(time){
+    console.log(time);
     clearInterval(time);
   }
   
