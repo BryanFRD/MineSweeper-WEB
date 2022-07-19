@@ -44,6 +44,8 @@ function resetGame(){
     clearInterval(time);
   }
   
+  timeCounter = 0;
+  
   time = setInterval(() => {
     timer.innerText = `Temps: ${Math.floor(timeCounter / 60).toLocaleString('fr-FR', {minimumIntegerDigits: 2, useGrouping: false})}:${(timeCounter % 60).toLocaleString('fr-FR', {minimumIntegerDigits: 2, useGrouping: false})}`;
     timeCounter++;
