@@ -1,0 +1,61 @@
+:root {
+  --minesweeper-case-width: 25px;
+  --minesweeper-case-height: 25px;
+  --minesweeper-rows: 10;
+  --minesweeper-cols: 10;
+}
+
+#gameGrid {
+  display: grid;
+  grid-template-rows: repeat(var(--minesweeper-rows), var(--minesweeper-case-height));
+  grid-template-columns: repeat(var(--minesweeper-cols), var(--minesweeper-case-width));
+}
+
+.case {
+  width: var(--minesweeper-case-width);
+  height: var(--minesweeper-case-height);
+  background-color: white;
+}
+
+.special-color {
+  animation: 2.5s rainbow infinite;
+}
+
+@keyframes rainbow{
+  100%,0%{
+    color: rgb(255,35,35);
+  }
+  8%{
+    color: rgb(255,127,35);
+  }
+  16%{
+    color: rgb(255,255,35);
+  }
+  25%{
+    color: rgb(127,255,35);
+  }
+  33%{
+    color: rgb(35,255,35);
+  }
+  41%{
+    color: rgb(35,255,127);
+  }
+  50%{
+    color: rgb(35,255,255);
+  }
+  58%{
+    color: rgb(35,127,255);
+  }
+  66%{
+    color: rgb(35,35,255);
+  }
+  75%{
+    color: rgb(127,35,255);
+  }
+  83%{
+    color: rgb(255,35,255);
+  }
+  91%{
+    color: rgb(255,35,127);
+  }
+}
