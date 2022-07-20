@@ -1,12 +1,18 @@
 const root = document.querySelector(":root");
 
 const caseTemplate = document.createElement("div");
-caseTemplate.classList.add("case", "border-dark", "border", "border-1", "fw-bold");
+caseTemplate.classList.add("case", "border-dark", "border", "border-1", "fw-bold", "d-flex", "justify-content-center", "align-items-center");
+
+const imgTemplate = document.createElement("img");
+imgTemplate.classList.add("img-fluid");
+
+const textTemplate = document.createElement("div");
 
 const colors = ["#0D6EFD", "#198754", "#FFC107", "#FD7E14", "#DC3545", "#6610F2", "#212529"];
 
 let time, timeCounter = 0;
 let grid = [];
+let canPlay = false;
 
 heightInput.addEventListener('change', (e) => {
   refreshInput(e.currentTarget, "--minesweeper-rows");
@@ -39,8 +45,9 @@ function refreshBombsInput(){
 }
 
 function resetGame(){
+  canPlay = true;
+  
   if(time){
-    console.log(time);
     clearInterval(time);
   }
   
@@ -57,22 +64,39 @@ function resetGame(){
     grid[height] = [];
     for(let width = 0; width < widthInput.value; width++){
       let tempCase = caseTemplate.cloneNode(true);
+      
       tempCase.addEventListener('click', (e) => {
-        revealCase(e.currentTarget);
+        e.preventDefault();
+        
+        
+        let currentTarget = e.currentTarget;
+        if(currentTarget.hasAttribute("data_location")){
+          let location = currentTarget.getAttribute("data_location").split(':');
+          revealCase(grid[location[0]][location[1]]);
+        }
       });
       tempCase.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        flagCase(e.currentTarget);
+        
+        let currentTarget = e.currentTarget;
+        if(currentTarget.hasAttribute("data_location")){
+          let location = currentTarget.getAttribute("data_location").split(':');
+          flagCase(grid[location[0]][location[1]]);
+        }
       });
+      
+      tempCase.setAttribute("data_location", `${height}:${width}`);
+      
       gameGrid.appendChild(tempCase);
       
       grid[height][width] = {
         caseDiv: tempCase,
         isRevealed: false,
         isBomb: false,
+        isFlagged: false,
         bombAround: 0,
-        x: width,
-        y: height
+        y: height,
+        x: width
       }
     }
   }
@@ -90,7 +114,6 @@ function resetGame(){
         }
         if(isInBound(x + tx, y + ty)){
           grid[y + ty][x + tx].bombAround++;
-          grid[y + ty][x + tx].caseDiv.innerText = grid[y + ty][x + tx].bombAround;
         }
       }
     }
@@ -98,17 +121,67 @@ function resetGame(){
   
 }
 
-function revealCase(caseDiv){
+function revealCase(caseObject, softSolve){
+  if(!caseObject || caseObject.isFlagged || caseObject.isRevealed || !canPlay || !isInBound(caseObject.x, caseObject.y)){
+    return;
+  }
   
+  if(caseObject.isBomb){
+    stopGame(false);
+    return;
+  }
+  
+  caseObject.caseDiv.style.backgroundColor = "var(--bs-gray-700)";
+  if(caseObject.bombAround > 0){
+    let tempText = textTemplate.cloneNode(true);
+    tempText.innerText = caseObject.bombAround;
+    tempText.style.color = colors[caseObject.bombAround % colors.length];
+    
+    if(caseObject.bombAround == 8) {
+      tempText.classList.add("special-color");
+    }
+    
+    caseObject.caseDiv.appendChild(tempText);
+  }
+  caseObject.isRevealed = true;
+  
+  setTimeout(() => {
+    let y = caseObject.y, x = caseObject.x;
+    revealCase(grid[y - 1][x], true);
+    revealCase(grid[y][x - 1], true);
+    revealCase(grid[y + 1][x], true);
+    revealCase(grid[y][x + 1], true);
+  }, 10);
 }
 
-function flagCase(caseDiv){
+function flagCase(caseObject){
+  if(!caseObject || caseObject.isRevealed || !canPlay || !isInBound(caseObject.x, caseObject.y)){
+    return;
+  }
   
+  if(caseObject.caseDiv.children.length > 0){
+    caseObject.caseDiv.removeChild(caseObject.caseDiv.children[0]);
+  }
+  
+  if(!caseObject.isFlagged){
+    let tempImg = imgTemplate.cloneNode(true);
+    tempImg.src = 'img/flag.png';
+    
+    caseObject.caseDiv.appendChild(tempImg);
+  }
+  
+  caseObject.isFlagged = !caseObject.isFlagged;
+}
+
+function stopGame(won){
+  console.log(won ? 'Perdu' : 'Perdu');
 }
 
 function isInBound(x, y){
   let w = widthInput.value, h = heightInput.value;
   return x >= 0 && x < w && y >= 0 && y < h;
 }
+
+resetButton.addEventListener('click', resetGame);
 
 resetGame();

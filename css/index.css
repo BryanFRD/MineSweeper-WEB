@@ -1,8 +1,8 @@
 :root {
   --minesweeper-case-width: 25px;
   --minesweeper-case-height: 25px;
-  --minesweeper-rows: 10;
-  --minesweeper-cols: 10;
+  --minesweeper-rows: 25;
+  --minesweeper-cols: 25;
 }
 
 #gameGrid {
@@ -12,9 +12,14 @@
 }
 
 .case {
+  user-select: none;
   width: var(--minesweeper-case-width);
   height: var(--minesweeper-case-height);
   background-color: white;
+}
+
+.case * {
+  padding: 1px;
 }
 
 .special-color {
