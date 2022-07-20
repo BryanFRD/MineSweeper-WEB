@@ -84,9 +84,12 @@ function resetGame(){
           flagCase(grid[location[0]][location[1]]);
         }
       });
+      tempCase.addEventListener('auxclick', (e) => {
+        let location = e.currentTarget.getAttribute("data_location").split(':');
+        console.log(grid[location[0]][location[1]]);
+      });
       
       tempCase.setAttribute("data_location", `${height}:${width}`);
-      
       gameGrid.appendChild(tempCase);
       
       grid[height][width] = {
@@ -106,6 +109,12 @@ function resetGame(){
     let y = Math.floor(temp / widthInput.value), x = temp % widthInput.value;
     
     let tempCase = grid[y][x];
+    
+    if(tempCase.isBomb){
+      bombs--;
+      continue;
+    }
+    
     tempCase.isBomb = true;
     for(let ty = -1; ty <= 1; ty++){
       for(let tx = -1; tx <= 1; tx++){
@@ -121,7 +130,7 @@ function resetGame(){
   
 }
 
-function revealCase(caseObject, softSolve){
+function revealCase(caseObject){
   if(!caseObject || caseObject.isFlagged || caseObject.isRevealed || !canPlay || !isInBound(caseObject.x, caseObject.y)){
     return;
   }
@@ -145,13 +154,21 @@ function revealCase(caseObject, softSolve){
   }
   caseObject.isRevealed = true;
   
-  setTimeout(() => {
-    let y = caseObject.y, x = caseObject.x;
-    revealCase(grid[y - 1][x], true);
-    revealCase(grid[y][x - 1], true);
-    revealCase(grid[y + 1][x], true);
-    revealCase(grid[y][x + 1], true);
-  }, 10);
+  if(caseObject.bombAround == 0){
+    
+    setTimeout((y, x) => {
+      
+      for(let offset = -1; offset <= 1; offset++){
+        let g = grid[y + offset][x];
+        let g2 = grid[y][x + offset];
+        
+        console.log(y, x, g, g2);
+        
+        revealCase(g);
+        revealCase(g2);
+      }
+    }, 50, caseObject.y, caseObject.x);
+  }
 }
 
 function flagCase(caseObject){
@@ -174,7 +191,7 @@ function flagCase(caseObject){
 }
 
 function stopGame(won){
-  console.log(won ? 'Perdu' : 'Perdu');
+  console.log(won ? 'Gagné' : 'Perdu');
 }
 
 function isInBound(x, y){
