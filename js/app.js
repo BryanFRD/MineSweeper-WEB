@@ -10,7 +10,7 @@ const textTemplate = document.createElement("div");
 
 const colors = ["#0D6EFD", "#198754", "#FFC107", "#FD7E14", "#DC3545", "#6610F2", "#212529"];
 
-let time, timeCounter = 0;
+let time, timeCounter = 0, flaggedBombs = 0, revealedCases = 0, maxBombs, maxCases;
 let grid = [];
 let canPlay = false;
 
@@ -52,6 +52,10 @@ function resetGame(){
   }
   
   timeCounter = 0;
+  flaggedBombs = 0;
+  revealedCases = 0;
+  maxBombs = bombsInput.value;
+  maxCases = heightInput.value * widthInput.value - maxBombs;
   
   time = setInterval(() => {
     timer.innerText = `Temps: ${Math.floor(timeCounter / 60).toLocaleString('fr-FR', {minimumIntegerDigits: 2, useGrouping: false})}:${(timeCounter % 60).toLocaleString('fr-FR', {minimumIntegerDigits: 2, useGrouping: false})}`;
@@ -127,10 +131,13 @@ function resetGame(){
       }
     }
   }
-  
 }
 
 function revealCase(caseObject){
+  if(gameFinished()){
+    stopGame(true);
+  }
+  
   if(!caseObject || caseObject.isFlagged || caseObject.isRevealed || !canPlay || !isInBound(caseObject.x, caseObject.y)){
     return;
   }
@@ -153,21 +160,21 @@ function revealCase(caseObject){
     caseObject.caseDiv.appendChild(tempText);
   }
   caseObject.isRevealed = true;
+  revealedCases++;
   
   if(caseObject.bombAround == 0){
     
     setTimeout((y, x) => {
       
       for(let offset = -1; offset <= 1; offset++){
-        let g = grid[y + offset][x];
-        let g2 = grid[y][x + offset];
-        
-        console.log(y, x, g, g2);
-        
-        revealCase(g);
-        revealCase(g2);
+        if(isInBound(y + offset, x)){
+          revealCase(grid[y + offset][x]);
+        }
+        if(isInBound(y, x + offset)){
+          revealCase(grid[y][x + offset])
+        }
       }
-    }, 50, caseObject.y, caseObject.x);
+    }, 10, caseObject.y, caseObject.x);
   }
 }
 
@@ -188,15 +195,23 @@ function flagCase(caseObject){
   }
   
   caseObject.isFlagged = !caseObject.isFlagged;
+  if(caseObject.isFlagged && caseObject.isBomb){
+    flaggedBombs++;
+  }
+}
+
+function gameFinished(){
+  return flaggedBombs == maxBombs && revealedCases == maxCases;
 }
 
 function stopGame(won){
+  canPlay = false;
   console.log(won ? 'Gagné' : 'Perdu');
 }
 
-function isInBound(x, y){
-  let w = widthInput.value, h = heightInput.value;
-  return x >= 0 && x < w && y >= 0 && y < h;
+function isInBound(y, x){
+  let h = heightInput.value, w = widthInput.value;
+  return y >= 0 && y < h && x >= 0 && x < w;
 }
 
 resetButton.addEventListener('click', resetGame);
